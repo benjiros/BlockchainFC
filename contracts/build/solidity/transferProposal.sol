@@ -6,7 +6,7 @@ contract Mortal {
     function kill() public { if (msg.sender == owner) selfdestruct(owner); }
 }
 
-contract Transfer is Mortal {
+contract Mercato is Mortal {
     
     struct SignedContract{
         address clubOwner;
@@ -14,10 +14,12 @@ contract Transfer is Mortal {
         uint256 duration;
     }
     
-    struct Transfer {
+    struct TransferProposal {
         address clubOwner;
         address clubOffer;
         address player;
+        bool playerAccepted;
+        bool clubAccepted;
         /*Contract thingies*/
         uint256 duration;
     }
@@ -35,21 +37,21 @@ contract Transfer is Mortal {
     mapping(address => bool) isPlayerEmployed;
     mapping(address => address) getCurrentAgent;
     mapping(address => SignedContract) getCurrentContractForPlayer;
-    mapping(address => Transfer[]) getTransfersProposalForClub;
-    mapping(address => Transfer[]) getCurrentPlayersForClub;
-    mapping(address => Transfer[]) getTransfersProposalForPlayer;
+    mapping(address => TransferProposal[]) getTransfersProposalForClub;
+    mapping(address => TransferProposal[]) getCurrentPlayersForClub;
+    mapping(address => TransferProposal[]) getTransfersProposalForPlayer;
     
     function proposeTransferToPlayer(address player, uint256 duration) public {
-        Transfer memory t;   
+        TransferProposal memory t;   
         if(isPlayerEmployed[msg.sender])
         {
-            SignedContract currentContract = getCurrentContractForPlayer[player]; 
-            t = Transfer(currentContract.clubOwner, msg.sender, player, duration);
+            SignedContract storage currentContract = getCurrentContractForPlayer[player]; 
+            t = TransferProposal(currentContract.clubOwner, msg.sender, player, false, false, duration);
         } else 
         {
-            t = Transfer(0, msg.sender, player, duration);        
+            t = TransferProposal(0, msg.sender, player, false, false, duration);        
         }
-        Transfer[] playersTranfers = getTransfersProposalForPlayer[player];
+        TransferProposal[] storage playersTranfers = getTransfersProposalForPlayer[player];
         bool alreadyProposed = false;
         for(uint32 i = 0 ; i < playersTranfers.length ; i++){
             if(playersTranfers[i].clubOffer == t.clubOffer){
@@ -63,11 +65,22 @@ contract Transfer is Mortal {
     }
 
     
-    function getTransferPlayerProposal() public view returns (uint256){
-        Transfer[] playersTranfers = getTransfersProposalForPlayer[msg.sender];
+    function getTransferPlayerProposalNumber() public view returns (uint256){
+        TransferProposal[] storage playersTranfers = getTransfersProposalForPlayer[msg.sender];
         return playersTranfers.length;
     }
+/*
+    function refuseTransferProposal() public  {
+        TransferProposal[] storage playersTranfer = getTransfersProposalForPlayer[msg.sender];
+        TransferProposal storage refused = playersTranfer[0];
+        
+    }
 
+    function acceptTransferProposal() public {
+        //Due to the limitation of the solidity framework you for now can only accept the first proposeTransferToPlayer
+        
+        TransferProposal[] storage playersTranfers = getTransfersProposalForPlayer[msg.sender];
+        }*/
     
 }
     
