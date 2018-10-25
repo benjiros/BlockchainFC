@@ -7,32 +7,68 @@ contract Mortal {
 }
 
 contract Transfer is Mortal {
-
-    struct TransferProposal {
-        address club;
+    
+    struct SignedContract{
+        address clubOwner;
+        address player;
+        uint256 duration;
+    }
+    
+    struct Transfer {
+        address clubOwner;
+        address clubOffer;
         address player;
         /*Contract thingies*/
         uint256 duration;
     }
-
-    mapping(address => TransferProposal[]) getTransfersForPlayer;
-    mapping(address => TransferProposal[]) getTransfersForClub;
-
-    function proposeTransferToPlayer(address player, uint256 duration) public {
-        TransferProposal memory t = TransferProposal(msg.sender, player, duration);
-        getTransfersForPlayer[player].push(t);
-
+    
+    function registerPlayer(address club, uint256 duration) public {
+        isPlayerEmployed[msg.sender] = true;
+        SignedContract memory c = SignedContract(club, msg.sender, duration);
+        getCurrentContractForPlayer[msg.sender] = c;
     }
-
-    function getTransferPlayerProposal() public view returns (string){
-        TransferProposal[] playersTranfers = getTransfersForPlayer[msg.sender];
-        if(playersTranfers.length == 0){
-            return "You don't have any pending contract proposal";
-        } else {
-            return "You have at least one pending contract ";
+   
+    function registerPlayer() public {
+        isPlayerEmployed[msg.sender] = false;
+    }
+    
+    mapping(address => bool) isPlayerEmployed;
+    mapping(address => address) getCurrentAgent;
+    mapping(address => SignedContract) getCurrentContractForPlayer;
+    mapping(address => Transfer[]) getTransfersProposalForClub;
+    mapping(address => Transfer[]) getCurrentPlayersForClub;
+    mapping(address => Transfer[]) getTransfersProposalForPlayer;
+    
+    function proposeTransferToPlayer(address player, uint256 duration) public {
+        Transfer memory t;   
+        if(isPlayerEmployed[msg.sender])
+        {
+            SignedContract currentContract = getCurrentContractForPlayer[player]; 
+            t = Transfer(currentContract.clubOwner, msg.sender, player, duration);
+        } else 
+        {
+            t = Transfer(0, msg.sender, player, duration);        
+        }
+        Transfer[] playersTranfers = getTransfersProposalForPlayer[player];
+        bool alreadyProposed = false;
+        for(uint32 i = 0 ; i < playersTranfers.length ; i++){
+            if(playersTranfers[i].clubOffer == t.clubOffer){
+                alreadyProposed = true;
+            }
+        }
+        if(!alreadyProposed){
+            getTransfersProposalForPlayer[player].push(t);
+            getTransfersProposalForClub[currentContract.clubOwner].push(t);
         }
     }
 
+    
+    function getTransferPlayerProposal() public view returns (uint256){
+        Transfer[] playersTranfers = getTransfersProposalForPlayer[msg.sender];
+        return playersTranfers.length;
+    }
+
+    
 }
-
-
+    
+    
