@@ -38,7 +38,7 @@ public class Controller {
         int AMOUNT_TO_SEND_OFFER = 1;
         Transfer.sendFunds(web3, credentials, TARGET_ACCOUNT, BigDecimal.valueOf(AMOUNT_TO_SEND_OFFER), Convert.Unit.ETHER).sendAsync().get();
 
-        .deploy(web3, credentials, DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT).send();
+        //.deploy(web3, credentials, DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT).send();
     }
 
 
