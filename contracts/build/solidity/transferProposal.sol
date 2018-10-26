@@ -151,7 +151,7 @@ contract Mercato is Mortal {
         return finalContract;
     }
     
-    function finalizeTransfer(address player) public payable{
+    function finalizeTransfer(address player) public payable returns (uint){
         
         TransferProposal[] storage playerTranfers = getTransfersProposalForPlayer[player];
         for(uint32 i = 0 ; i < playerTranfers.length ; i++){
@@ -159,10 +159,13 @@ contract Mercato is Mortal {
                 TransferProposal storage acceptedProposal = playerTranfers[i];
             }
         }
+        require(msg.value >= acceptedProposal.price);
         
         signContract(acceptedProposal);
         //acceptedProposal.clubOwner.transfer(acceptedProposal.price);
         cleanUpPaperwork(acceptedProposal.player, acceptedProposal.clubOwner);
+        
+        return msg.sender.balance;
     }
     
 }
