@@ -3,15 +3,11 @@ pragma solidity ^0.4.17;
 
 contract Mortal {
     address owner;
-    constructor() public payable { owner = msg.sender; }
+    constructor() public { owner = msg.sender; }
     function kill() public { if (msg.sender == owner) selfdestruct(owner); }
 }
 
 contract Mercato is Mortal {
-    
-    constructor() public payable{
-        
-    }
     
     struct SignedContract{
         address clubOwner;
@@ -50,7 +46,7 @@ contract Mercato is Mortal {
     mapping(address => TransferProposal[]) getCurrentPlayersForClub;
     mapping(address => TransferProposal[]) getTransfersProposalForPlayer;
     
-    function proposeTransferToPlayer(address player, uint256 duration, uint256 price) public  {
+    function proposeTransferToPlayer(address player, uint256 duration, uint256 price) public returns (address, address, uint256)  {
         TransferProposal memory t;   
         if(isPlayerEmployed[player])
         {
@@ -73,6 +69,7 @@ contract Mercato is Mortal {
                 getTransfersProposalForClub[currentContract.clubOwner].push(t);
             }
         }
+        return(t.player, t.clubOffer, t.duration);
     }
 
     function getPlayerEmployed() public view returns (bool){
@@ -159,13 +156,15 @@ contract Mercato is Mortal {
                 TransferProposal storage acceptedProposal = playerTranfers[i];
             }
         }
-        require(msg.value >= acceptedProposal.price);
-        
-        signContract(acceptedProposal);
-        //acceptedProposal.clubOwner.transfer(acceptedProposal.price);
-        cleanUpPaperwork(acceptedProposal.player, acceptedProposal.clubOwner);
-        
-        return msg.sender.balance;
+        if(acceptedProposal.clubAccepted && acceptedProposal.playerAccepted){
+            require(msg.value >= acceptedProposal.price);
+            signContract(acceptedProposal);
+            //acceptedProposal.clubOwner.transfer(acceptedProposal.price);
+            cleanUpPaperwork(acceptedProposal.player, acceptedProposal.clubOwner);
+            
+            return msg.sender.balance;
+        }
+        return 0;
     }
     
 }
