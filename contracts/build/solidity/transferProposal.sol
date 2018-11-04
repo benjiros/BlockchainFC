@@ -16,6 +16,12 @@ contract Mercato is Mortal {
         uint256 price;
     }
     
+    struct SignedService{
+        address player;
+        address agent;
+        uint256 percentage;
+    }
+    
     struct TransferProposal {
         address clubOwner;
         address clubOffer;
@@ -25,6 +31,12 @@ contract Mercato is Mortal {
         /*Contract thingies*/
         uint256 duration;
         uint256 price;
+    }
+    
+    struct ServiceProposal {
+        address agent;
+        address player;
+        uint256 percentage;
     }
     
     function registerPlayer(address club, uint256 duration, uint256 price) public {
@@ -38,6 +50,8 @@ contract Mercato is Mortal {
         isPlayerEmployed[msg.sender] = false;
     }
     
+    mapping(address => SignedService) getAgentForPlayer;
+    mapping(address => SignedService[]) getPlayerForAgent;
     mapping(address => bool) isPlayerEmployed;
     mapping(address => address) getCurrentAgent;
     mapping(address => SignedContract) getCurrentContractForPlayer;
@@ -45,6 +59,31 @@ contract Mercato is Mortal {
     mapping(address => TransferProposal[]) getTransfersProposalForClub;
     mapping(address => TransferProposal[]) getCurrentPlayersForClub;
     mapping(address => TransferProposal[]) getTransfersProposalForPlayer;
+    mapping(address => ServiceProposal[]) getServiceForPlayer;
+    
+    
+    function acceptService() public returns (address, address, uint256){
+        ServiceProposal storage proposal = getServiceForPlayer[msg.sender][0];
+        SignedService memory signed = SignedService(msg.sender, proposal.agent, proposal.percentage);
+        getAgentForPlayer[msg.sender] = signed;
+        getPlayerForAgent[proposal.agent].push(signed);
+        delete getServiceForPlayer[msg.sender];
+        
+        return(signed.player, signed.agent, signed.percentage);
+    }
+    
+    function refuseService() public returns (uint32){
+        ServiceProposal[] storage proposals = getServiceForPlayer[msg.sender];
+        proposals[0] = proposals[proposals.length-1];
+        proposals.length--;
+        
+        return(0);
+    }
+    
+    function proposeServiceToPlayer(address player, uint256 percentage) public {
+        ServiceProposal memory s = ServiceProposal(msg.sender, player, percentage);
+        getServiceForPlayer[player].push(s);
+    }
     
     function proposeTransferToPlayer(address player, uint256 duration, uint256 price) public returns (address, address, uint256)  {
         TransferProposal memory t;   
@@ -94,6 +133,11 @@ contract Mercato is Mortal {
     function getClubNumberOfPlayers() public view returns (uint256) {
         SignedContract[] storage clubContracts = getCurrentContractForClub[msg.sender];
         return clubContracts.length;
+    }
+
+    function getServiceProposal() public view returns (address, uint256){
+        ServiceProposal storage proposal = getServiceForPlayer[msg.sender][0];
+        return(proposal.agent, proposal.percentage);
     }
 
     function refuseTransferProposalPlayer() public  {
