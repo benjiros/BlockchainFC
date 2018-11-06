@@ -74,6 +74,12 @@ contract Mercato is Mortal {
         return(signed.player, signed.agent, signed.percentage);
     }
     
+    function getTransferForPlayerAt(uint i) public returns (address, uint256, uint256){
+        TransferProposal storage proposal = getTransfersProposalForPlayer[msg.sender][i];
+        
+        return (proposal.clubOffer, proposal.duration, proposal.price);
+    }
+    
     function refuseService() public returns (uint32){
         ServiceProposal[] storage proposals = getServiceForPlayer[msg.sender];
         proposals[0] = proposals[proposals.length-1];
@@ -156,16 +162,37 @@ contract Mercato is Mortal {
         clubTranfer.length--;
     }
     
-    function acceptPlayerTransferProposal() public {
+    function isOfferAccepted(address player) public returns (bool, bool){
+        TransferProposal[] storage clubTranfers = getTransfersProposalForClub[msg.sender];
+        for(uint32 i = 0 ; i < clubTranfers.length ; i++){
+            if(clubTranfers[i].player == player){
+                TransferProposal storage offer = clubTranfers[i];
+            }
+        }
+        return (offer.clubAccepted, offer.playerAccepted);
+    }
+    
+    function acceptPlayerTransferProposal(address club) public returns(bool, bool) {
         //Due to the limitation of the solidity framework you for now can only accept the first proposeTransferToPlayer
-        TransferProposal storage offer = getTransfersProposalForPlayer[msg.sender][0];
-        
-        offer.playerAccepted = true;
-        /*if(offer.clubAccepted){
-            SignedContract memory s = signContract(offer.clubOffer, msg.sender, offer.duration, offer.price);
-            cleanUpPaperwork(msg.sender, offer.clubOwner);
-            executeMoneyTransfer(offer.clubOffer, offer.clubOwner, msg.sender, offer.price);
-        }*/
+        TransferProposal[] storage clubTranfers = getTransfersProposalForPlayer[msg.sender];
+        for(uint32 i = 0 ; i < clubTranfers.length ; i++){
+            if(clubTranfers[i].clubOffer == club){
+                TransferProposal storage offer = clubTranfers[i];
+                clubTranfers[i].playerAccepted = true;
+            }
+        }
+        return (offer.clubAccepted, offer.playerAccepted);
+    }
+    
+    function acceptTransferProposalClub(address player) public returns(bool) {
+        TransferProposal[] storage clubTranfers = getTransfersProposalForClub[msg.sender];
+        for(uint32 i = 0 ; i < clubTranfers.length ; i++){
+            if(clubTranfers[i].player == player){
+                TransferProposal storage offer = clubTranfers[i];
+                clubTranfers[i].clubAccepted = true;
+            }
+        }
+        return (offer.clubAccepted);
     }
     
     function cleanUpPaperwork(address player, address club) private{
@@ -177,12 +204,13 @@ contract Mercato is Mortal {
                 clubTranfers.length--;
             }
         }
-        
-        SignedContract[] storage clubContracts = getCurrentContractForClub[club];
-        for(uint32 j = 0 ; j < clubContracts.length ; j++){
-            if(clubContracts[j].player == player){
-                clubContracts[j] = clubContracts[clubContracts.length-1];
-                clubContracts.length--;
+        if(club != 0){
+            SignedContract[] storage clubContracts = getCurrentContractForClub[club];
+            for(uint32 j = 0 ; j < clubContracts.length ; j++){
+                if(clubContracts[j].player == player){
+                    clubContracts[j] = clubContracts[clubContracts.length-1];
+                    clubContracts.length--;
+                }
             }
         }
     }
@@ -202,14 +230,26 @@ contract Mercato is Mortal {
                 TransferProposal storage acceptedProposal = playerTranfers[i];
             }
         }
-        if(acceptedProposal.clubAccepted && acceptedProposal.playerAccepted){
-            require(msg.value >= acceptedProposal.price);
-            signContract(acceptedProposal);
-            //acceptedProposal.clubOwner.transfer(acceptedProposal.price);
-            cleanUpPaperwork(acceptedProposal.player, acceptedProposal.clubOwner);
-            
-            return msg.sender.balance;
+        if(isPlayerEmployed[player]){
+            if(acceptedProposal.clubAccepted && acceptedProposal.playerAccepted){
+                require(msg.value >= acceptedProposal.price);
+                signContract(acceptedProposal);
+                //acceptedProposal.clubOwner.transfer(acceptedProposal.price);
+                cleanUpPaperwork(acceptedProposal.player, acceptedProposal.clubOwner);
+                
+                return msg.sender.balance;
+            } else {
+                return 1;
+            }
+        }    
+        else {
+            if(acceptedProposal.playerAccepted){
+                require(msg.value >= acceptedProposal.price);
+                signContract(acceptedProposal);
+                cleanUpPaperwork(acceptedProposal.player, 0);
+            }
         }
+        
         return 0;
     }
     
