@@ -74,7 +74,7 @@ contract Mercato is Mortal {
         return(signed.player, signed.agent, signed.percentage);
     }
     
-    function getTransferForPlayerAt(uint i) public returns (address, uint256, uint256){
+    function getTransferForPlayerAt(uint i) public view returns (address, uint256, uint256){
         TransferProposal storage proposal = getTransfersProposalForPlayer[msg.sender][i];
         
         return (proposal.clubOffer, proposal.duration, proposal.price);
@@ -172,24 +172,39 @@ contract Mercato is Mortal {
         return (offer.clubAccepted, offer.playerAccepted);
     }
     
-    function acceptPlayerTransferProposal(address club) public returns(bool, bool) {
+    function acceptTransferProposalPlayer(address club) public returns(bool, bool) {
         //Due to the limitation of the solidity framework you for now can only accept the first proposeTransferToPlayer
-        TransferProposal[] storage clubTranfers = getTransfersProposalForPlayer[msg.sender];
-        for(uint32 i = 0 ; i < clubTranfers.length ; i++){
-            if(clubTranfers[i].clubOffer == club){
-                TransferProposal storage offer = clubTranfers[i];
-                clubTranfers[i].playerAccepted = true;
+        TransferProposal[] storage playerTranfers = getTransfersProposalForPlayer[msg.sender];
+        for(uint32 i = 0 ; i < playerTranfers.length ; i++){
+            if(playerTranfers[i].clubOffer == club){
+                TransferProposal storage offer = playerTranfers[i];
+                playerTranfers[i].playerAccepted = true;
             }
         }
+        
+        TransferProposal[] storage clubTranfers = getTransfersProposalForClub[offer.clubOwner];
+        for(uint32 j = 0 ; j < clubTranfers.length ; j++){
+            if(clubTranfers[j].player == msg.sender && clubTranfers[j].clubOffer == club){
+                clubTranfers[j].playerAccepted = true;
+            }
+        }
+        
         return (offer.clubAccepted, offer.playerAccepted);
     }
     
-    function acceptTransferProposalClub(address player) public returns(bool) {
+    function acceptTransferProposalClub(address player, address club) public returns (bool) {
         TransferProposal[] storage clubTranfers = getTransfersProposalForClub[msg.sender];
         for(uint32 i = 0 ; i < clubTranfers.length ; i++){
-            if(clubTranfers[i].player == player){
+            if(clubTranfers[i].player == player && clubTranfers[i].clubOffer == club){
                 TransferProposal storage offer = clubTranfers[i];
                 clubTranfers[i].clubAccepted = true;
+            }
+        }
+        
+        TransferProposal[] storage playerTranfers = getTransfersProposalForPlayer[player];
+        for(uint32 j = 0 ; j < playerTranfers.length ; j++){
+            if(playerTranfers[j].clubOffer == club){
+                playerTranfers[j].playerAccepted = true;
             }
         }
         return (offer.clubAccepted);
