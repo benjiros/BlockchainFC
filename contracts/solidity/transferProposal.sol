@@ -39,11 +39,13 @@ contract Mercato is Mortal {
         uint256 percentage;
     }
     
-    function registerPlayer(address club, uint256 duration, uint256 price) public {
+    function registerPlayer(address club, uint256 duration, uint256 price) public returns (address, address) {
         isPlayerEmployed[msg.sender] = true;
         SignedContract memory c = SignedContract(club, msg.sender, duration, price);
         getCurrentContractForPlayer[msg.sender] = c;
         getCurrentContractForClub[club].push(c);
+
+        return(msg.sender, club);
     }
    
     function registerPlayer() public {
