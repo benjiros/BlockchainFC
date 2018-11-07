@@ -16,18 +16,24 @@ contract Mercato is Mortal {
         uint256 price;
     }
 
+    struct SwapProposal{
+        address club1;
+        address club2;
+        address player1;
+        address player2;
+        uint256 duration1;
+        uint256 duration2;
+        bool club2Accepted;
+    }
+
+    struct SwapContract{
+
+    }
+
     struct SignedService{
         address player;
         address agent;
         uint256 percentage;
-    }
-
-    struct LoanProposal {
-        address clubOwner;
-        address clubOffer;
-        address player;
-        uint256 duration;
-        bool buyingOption;
     }
 
     struct TransferProposal {
@@ -71,6 +77,31 @@ contract Mercato is Mortal {
     mapping(address => TransferProposal[]) getTransfersProposalForPlayer;
     mapping(address => ServiceProposal[]) getServiceForPlayer;
 
+    mapping(address => SwapProposal[]) getSwapProposalForPlayer;
+    mapping(address => SwapProposal[]) getSwapProposalForClub;
+
+    function proposeSwap(address myPlayer, address player2, address club2, uint256 duration1, uint256 duration2) public returns(string){
+        SignedContract[] storage myRoaster = getCurrentContractForClub[msg.sender];
+        SignedContract[] storage club2Roaster = getCurrentContractForClub[club2];
+
+        if(!isPlayerEmployed[myPlayer] || !isPlayerEmployed[player2]){
+            return "One player isn't in a team";
+        }
+        if(getCurrentContractForPlayer[myPlayer].clubOwner != msg.sender){
+            return ("Error not your player");
+        }
+        if(getCurrentContractForPlayer[player2].clubOwner != club2){
+            return ("Error player not in corresponding team");
+        }
+
+        SwapProposal memory proposal = SwapProposal(msg.sender, club2, myPlayer, player2, duration1, duration2, false);
+
+        getSwapProposalForClub[msg.sender].push(proposal);
+        getSwapProposalForPlayer[myPlayer].push(proposal);
+        getSwapProposalForClub[club2].push(proposal);
+        getSwapProposalForPlayer[player2].push(proposal);
+
+    }
 
     function acceptService() public returns (address, address, uint256){
         ServiceProposal storage proposal = getServiceForPlayer[msg.sender][0];
@@ -293,6 +324,32 @@ contract Mercato is Mortal {
     function getOfferReceivedByClubAt(uint i) public view returns (address, address, uint256, uint256, bool, bool) {
         TransferProposal storage proposals = getTransfersProposalForClub[msg.sender][i];
         return (proposals.player, proposals.clubOffer, proposals.duration, proposals.price, proposals.playerAccepted, proposals.clubAccepted);
+    }
+
+    function quitCurrentClub() public {
+        address currentClub = getCurrentContractForPlayer[msg.sender].clubOwner;
+        delete getCurrentContractForPlayer[msg.sender];
+        SignedContract[] storage roaster = getCurrentContractForClub[currentClub];
+        for(uint32 j = 0 ; j < roaster.length ; j++){
+            if(roaster[j].player == msg.sender){
+                roaster[j] = roaster[roaster.length-1];
+                roaster.length--;
+            }
+        }
+    }
+
+    function acceptSwapProposal() public view returns(string){
+        SwapProposal[] p = getSwapProposalForClub[msg.sender];
+    }
+
+    function getSwapProposalNumberForClub() public view returns (uint){
+        return getSwapProposalForClub[msg.sender].length;
+    }
+
+    function getCurrentSwapProposalForClubAt(uint i) public view returns (address, address, address, uint256, uint256){
+        SwapProposal p = getSwapProposalForClub[msg.sender][i];
+
+        return(p.player1, p.player2, p.club2, p.duration1, p.duration2);
     }
 }
 
