@@ -22,6 +22,14 @@ contract Mercato is Mortal {
         uint256 percentage;
     }
 
+    struct LoanProposal {
+        address clubOwner;
+        address clubOffer;
+        address player;
+        uint256 duration;
+        bool buyingOption;
+    }
+
     struct TransferProposal {
         address clubOwner;
         address clubOffer;
@@ -280,6 +288,11 @@ contract Mercato is Mortal {
     function getAgentPlayerAt(uint i) public view returns(address, uint256){
         SignedService storage currentService = getPlayersForAgent[msg.sender][i];
         return (currentService.player, currentService.percentage);
+    }
+
+    function getOfferReceivedByClubAt(uint i) public view returns (address, address, uint256, uint256, bool, bool) {
+        TransferProposal storage proposals = getTransfersProposalForClub[msg.sender][i];
+        return (proposals.player, proposals.clubOffer, proposals.duration, proposals.price, proposals.playerAccepted, proposals.clubAccepted);
     }
 }
 
