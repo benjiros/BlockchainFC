@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 import javax.swing.*;
 
 public class Login extends JFrame implements ActionListener {
-
+    //TODO CREER ACCOUNT
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private int width = screenSize.width;
     private int height = screenSize.height;
@@ -87,9 +87,9 @@ public class Login extends JFrame implements ActionListener {
            String username = textField.getText();
            String password = String.valueOf(passwordField.getPassword());
            this.dispose();
-           if(playerRadio.isSelected()) new HomePlayer(username,password);
-           if(agentRadio.isSelected()) new HomeAgent(username,password);
-           if(clubRadio.isSelected()) new HomeClub(username,password);
+           if(playerRadio.isSelected()) new HomePlayer(username);
+           if(agentRadio.isSelected()) new HomeAgent(username);
+           if(clubRadio.isSelected()) new HomeClub(username);
         }
     }
 }
