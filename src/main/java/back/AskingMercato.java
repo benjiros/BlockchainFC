@@ -1,20 +1,26 @@
+package back;
+
 import org.web3j.crypto.CipherException;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.WalletUtils;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.exceptions.TransactionException;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.tuples.generated.Tuple3;
 import org.web3j.tx.Transfer;
 import org.web3j.tx.gas.DefaultGasProvider;
 import org.web3j.utils.Convert;
 import smartContracts.Mercato.Mercato;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-public class Controller {
+public class AskingMercato {
 
     // Path to ethereum base dir (This account will be debited)
 
@@ -60,18 +66,18 @@ public class Controller {
         }
     }
 
-    public void transferProposal(String clubAccount, String clubPassword, String player, int duration) throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
+    public void transferProposal(String clubAccount, String clubPassword, String player, BigInteger duration, BigInteger price) throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
 
         // Load credentials for accessing wallet of source account
         Credentials credentials = WalletUtils.loadCredentials(clubPassword,clubAccount);
 
-        Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
+        Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, BigInteger.valueOf(0), DefaultGasProvider.GAS_LIMIT);
 
         System.out.println("mercato address : "+ MERCATO_ADDRESS);
 
         try{
            // System.out.println(mercato.proposeTransferToPlayer(player,BigInteger.valueOf(duration), BigInteger.valueOf(1)).send());
-            mercato.proposeTransferToPlayer(player,BigInteger.valueOf(duration), BigInteger.valueOf(1)).send();
+            mercato.proposeTransferToPlayer(player, duration, price).send();
             System.out.println("Transfer offer done");
         } catch (Exception e){
 
@@ -103,8 +109,6 @@ public class Controller {
 
 
     public void registerPlayer(String playerAccount, String playerPassword) throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
-
-
         // Load credentials for accessing wallet of source account
         Credentials credentials = WalletUtils.loadCredentials(playerPassword, playerAccount);
         Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
@@ -117,11 +121,11 @@ public class Controller {
 
         // Load credentials for accessing wallet of source account
         Credentials credentials = WalletUtils.loadCredentials(playerPassword, playerAccount);
-        Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, DefaultGasProvider.GAS_PRICE, DefaultGasProvider.GAS_LIMIT);
+        Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, BigInteger.valueOf(0), DefaultGasProvider.GAS_LIMIT);
         System.out.println("mercato address : "+ MERCATO_ADDRESS);
 
         try{
-            mercato.registerPlayer(club, duration , price);
+            mercato.registerPlayer(club, duration , price).send();
             System.out.println("Player Registered");
         }
         catch (Exception e){
@@ -203,6 +207,53 @@ public class Controller {
             System.err.println(e);
         }
         return club;
+    }
+
+    public List<Tuple3> getListOfferPlayer (String playerAccount, String playerPassword) throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
+
+        Credentials credentials = WalletUtils.loadCredentials(playerPassword, playerAccount);
+
+        Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, BigInteger.valueOf(0), DefaultGasProvider.GAS_LIMIT);
+
+        List<Tuple3> listOfferPlayer = new ArrayList<Tuple3>();
+        try{
+            int nbOffers = mercato.getTransferProposalNumberPlayer().send().intValue();
+            System.out.println( "nb d'offre : " + nbOffers);
+            Tuple3 offer ;
+            for (int i = 0; i < nbOffers; i++){
+                offer = mercato.getTransferForPlayerAt(BigInteger.valueOf(i)).send();
+                System.out.println("club address : " + offer.getValue1() + " duration : " + offer.getValue2() + " price :  " + offer.getValue3());
+                listOfferPlayer.add(offer);
+
+            }
+        } catch (Exception e){
+            System.err.println(e);
+        }
+        return listOfferPlayer;
+    }
+
+
+    public List<Tuple3> getPlayerOfClub (String clubAccount, String clubPassword) throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
+
+        Credentials credentials = WalletUtils.loadCredentials(clubPassword, clubAccount);
+
+        Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, BigInteger.valueOf(0), DefaultGasProvider.GAS_LIMIT);
+
+        List<Tuple3> listOfferPlayer = new ArrayList<Tuple3>();
+        try{
+            int nbPlayers = mercato.getClubNumberOfPlayers().send().intValue();
+            System.out.println( "nb de joueurs : " + nbPlayers);
+            Tuple3 player ;
+            for (int i = 0; i < nbPlayers; i++){
+                player = mercato.getClubPlayerAt(BigInteger.valueOf(i)).send();
+                System.out.println("player address : " + player.getValue1() + " contract duration : " + player.getValue2() + " price :  " + player.getValue3());
+                listOfferPlayer.add(player);
+
+            }
+        } catch (Exception e){
+            System.err.println(e);
+        }
+        return listOfferPlayer;
     }
 
 

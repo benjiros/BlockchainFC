@@ -1,3 +1,5 @@
+import back.AskingMercato;
+import back.InterfaceConsole;
 import org.web3j.crypto.CipherException;
 import org.web3j.protocol.exceptions.TransactionException;
 
@@ -17,6 +19,9 @@ public class Launcher {
 
     public static void main(String[] args) throws InterruptedException, TransactionException, CipherException, IOException, ExecutionException {
 
+        InterfaceConsole interfaceConsole = new InterfaceConsole();
+       // interfaceConsole.start();
+
         String ClubA_longName = "/Users/benjiros/Library/Ethereum/Blockchain FC/keystore/UTC--2018-10-24T14-52-40.358632659Z--30c45fea0f173249978e90aa3d76add6222679bf";
         String ClubA = "0x30c45fea0f173249978e90aa3d76add6222679bf" ;
         String ClubA_Password = "liverpool" ;
@@ -30,27 +35,29 @@ public class Launcher {
         String Player1 = "0x970f192e8491c839ba957d7dcb286f1d3fb1ccc4" ;
         String Player1_Password = "" ;
 
-        Controller controller = new Controller();
+        AskingMercato mercato = new AskingMercato();
 
-        controller.initiate();
+        mercato.initiate();
 
 
     //    controller.registerPlayer("/Users/benjiros/Library/Ethereum/Blockchain FC/keystore/UTC--2018-10-24T14-51-03.916128461Z--970f192e8491c839ba957d7dcb286f1d3fb1ccc4","");
         BigInteger duration = BigInteger.valueOf(1);
         BigInteger price = BigInteger.valueOf(2);
-        controller.registerPlayerToClub( ClubA, Player1_longName ,Player1_Password,  duration , price );
+        mercato.registerPlayerToClub( ClubA, Player1_longName ,Player1_Password,  duration , price );
 
 
 
-        controller.employedOrNot(Player1_longName,Player1_Password);
+        mercato.employedOrNot(Player1_longName,Player1_Password);
 
 
-        controller.getNumberOfPlayerInClub(ClubA_longName, ClubA_Password);
+        mercato.getNumberOfPlayerInClub(ClubA_longName, ClubA_Password);
 
-        controller.transferProposal(ClubB_longName, ClubB_Password,Player1, 1);
+        mercato.transferProposal(ClubB_longName, ClubB_Password,Player1, BigInteger.valueOf(1), BigInteger.valueOf(22));
 
 
-        controller.getTransferPlayerProposalNumber(Player1_longName,Player1_Password);
+        mercato.getListOfferPlayer(Player1_longName,Player1_Password);
+
+        mercato.getPlayerOfClub(ClubA_longName, ClubA_Password);
 
 
     }
