@@ -273,6 +273,10 @@ contract Mercato is Mortal {
         return (currentContract.player, currentContract.duration, currentContract.price);
     }
 
+    function getAgentPlayerNumber() public view returns(uint){
+        return getPlayersForAgent[msg.sender].length;
+    }
+
     function getAgentPlayerAt(uint i) public view returns(address, uint256){
         SignedService storage currentService = getPlayersForAgent[msg.sender][i];
         return (currentService.player, currentService.percentage);
