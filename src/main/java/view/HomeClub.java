@@ -9,19 +9,23 @@ public class HomeClub extends JFrame implements ActionListener {
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private int width = screenSize.width;
     private int height = screenSize.height;
+    Font policeDisconnect = new Font(" Arial ",Font.BOLD,14);
     Font policeGeneral = new Font(" Arial ",Font.BOLD,18);
     Font policeButton = new Font(" Arial ",Font.BOLD,22);
     Font policeTitle = new Font(" Arial ",Font.BOLD,40);
     String username;
 
     JFrame propositionFrame;
+    JFrame exchangeFrame;
     JFrame hireFrame;
     JFrame renewFrame;
 
-    JTable table;
+    JTable tableClub;
+    JTable tableAvailable;
     JTextField yearsContract;
     JTextField priceContract;
 
+    JButton disconnectButton;
     JButton playersClubButton;
     JButton transfertButton;
     JButton exchangeButton;
@@ -29,6 +33,7 @@ public class HomeClub extends JFrame implements ActionListener {
     JButton hirePlayerButton;
 
     JButton confirmPropositionButton;
+    JButton confirmExchangeButton;
     JButton confirmRenewButton;
     JButton confirmHireButton;
 
@@ -50,6 +55,13 @@ public class HomeClub extends JFrame implements ActionListener {
         this.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // fin du programme lors de la fermeture de la fenêtre
         this.setResizable(false);
+
+        JPanel disconnectArea = new JPanel();
+        disconnectButton = new JButton("Se déconnecter");
+        disconnectButton.setFont(policeDisconnect);
+        disconnectButton.setBackground(Color.WHITE);
+        disconnectButton.addActionListener(this);
+        disconnectArea.add(disconnectButton);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel(username.toUpperCase() + " - " + "CLUB");
@@ -94,6 +106,7 @@ public class HomeClub extends JFrame implements ActionListener {
 
         JPanel all = new JPanel();
         all.setLayout(new BoxLayout(all, BoxLayout.PAGE_AXIS));
+        all.add(disconnectArea);
         all.add(titleArea);
         all.add(playersClubArea);
         all.add(transfertnArea);
@@ -171,6 +184,43 @@ public class HomeClub extends JFrame implements ActionListener {
         propositionFrame.setVisible(true);
     }
 
+    public void exchangeProposition(){
+        exchangeFrame = new JFrame();
+        exchangeFrame.setTitle("Proposition d'échanges");
+        exchangeFrame.setSize(width/2, height/3*2);
+        exchangeFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
+        exchangeFrame.setResizable(false);
+
+        JPanel titleArea = new JPanel();
+        JLabel title = new JLabel("Sélectionner le joueur de votre club à échanger");
+        title.setFont(policeButton);
+        titleArea.add(title);
+
+        JPanel secondTitleArea = new JPanel();
+        JLabel secondTitle = new JLabel("Sélectionner le joueur à échanger");
+        secondTitle.setFont(policeButton);
+        secondTitleArea.add(secondTitle);
+
+        JPanel confirmExchangeArea = new JPanel();
+        confirmExchangeArea.setLayout(new BoxLayout(confirmExchangeArea, BoxLayout.LINE_AXIS));
+        confirmExchangeButton = new JButton("Envoyer l'offre de transfert");
+        confirmExchangeButton.setFont(policeButton);
+        confirmExchangeButton.setBackground(Color.WHITE);
+        confirmExchangeButton.addActionListener(this);
+        confirmExchangeArea.add(confirmExchangeButton);
+
+
+        JPanel all = new JPanel();
+        all.setLayout(new BoxLayout(all, BoxLayout.PAGE_AXIS));
+        all.add(titleArea);
+        all.add(listPlayersClubArea());
+        all.add(secondTitleArea);
+        all.add(listPlayersAvailablerea());
+        all.add(confirmExchangeArea);
+        exchangeFrame.getContentPane().add(all);
+        exchangeFrame.setVisible(true);
+
+    }
 
     public void renewContract(){
         renewFrame = new JFrame();
@@ -208,8 +258,8 @@ public class HomeClub extends JFrame implements ActionListener {
         all.add(confirmRenewArea);
         renewFrame.getContentPane().add(all);
         renewFrame.setVisible(true);
-
     }
+
     public void hirePlayer(){
         hireFrame = new JFrame();
         hireFrame.setTitle("Renvoyer un joueur");
@@ -242,6 +292,10 @@ public class HomeClub extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == disconnectButton){
+            this.dispose();
+            new Login();
+        }
 
         if (e.getSource() == playersClubButton){
             seePlayers();
@@ -249,7 +303,9 @@ public class HomeClub extends JFrame implements ActionListener {
         if (e.getSource() == transfertButton){
             transfertProposition();
         }
-        if (e.getSource() == exchangeButton){}
+        if (e.getSource() == exchangeButton){
+            exchangeProposition();
+        }
         if (e.getSource() == renewContractButton){
             renewContract();
         }
@@ -258,15 +314,25 @@ public class HomeClub extends JFrame implements ActionListener {
         }
 
         if (e.getSource() == confirmPropositionButton){
-            if(table.getSelectedRow() >= 0 && yearsContract.getText().length()!=0 && priceContract.getText().length()!=0) {
+            if(tableAvailable.getSelectedRow() >= 0 && yearsContract.getText().length()!=0 && priceContract.getText().length()!=0) {
                 //TODO ENVOYER PROPOSITION DE TRANSFERT
                 propositionFrame.dispose();
                 transfertProposition();
                 new Informations("La proposition de transfert a été envoyé");
             }
         }
+
+        if (e.getSource() == confirmPropositionButton){
+            if(tableAvailable.getSelectedRow() >= 0 && tableClub.getSelectedRow() >= 0){
+                //TODO FAIRE PROPOSITION ECHANGE
+                exchangeFrame.dispose();
+                exchangeProposition();
+                new Informations("La proposition a été envoyée");
+            }
+        }
+
         if (e.getSource() == confirmRenewButton){
-            if(table.getSelectedRow() >= 0 && yearsContract.getText().length()!=0) {
+            if(tableClub.getSelectedRow() >= 0 && yearsContract.getText().length()!=0) {
                 //TODO RENOUVELER LE CONTRAT
                 //yearsContract.getText()
                 renewFrame.dispose();
@@ -276,7 +342,7 @@ public class HomeClub extends JFrame implements ActionListener {
         }
 
         if (e.getSource() == confirmHireButton){
-            if(table.getSelectedRow() >= 0) {
+            if(tableClub.getSelectedRow() >= 0) {
                 //TODO RENVOYER JOUEUR SELECTIONNE
                 hireFrame.dispose();
                 hirePlayer();
@@ -289,14 +355,14 @@ public class HomeClub extends JFrame implements ActionListener {
         //TODO RECUP LISTE JOUEURS DU CLUB
         String titre[] = {"Nom", "A", "Taille"};
         JPanel listPlayersArea = new JPanel();
-        table = new JTable(data, titre);
-        table.setFont(policeGeneral);
-        table.setRowHeight(30);
+        tableClub = new JTable(data, titre);
+        tableClub.setFont(policeGeneral);
+        tableClub.setRowHeight(30);
         for(int i=0; i<data[0].length; i++){
-            table.getColumnModel().getColumn(i).setPreferredWidth(180);
+            tableClub.getColumnModel().getColumn(i).setPreferredWidth(180);
         }
 
-        listPlayersArea.add(table);
+        listPlayersArea.add(tableClub);
         return listPlayersArea;
     }
 
@@ -304,14 +370,14 @@ public class HomeClub extends JFrame implements ActionListener {
         //TODO RECUP LISTE JOUEURS DISPONIBLES
         String titre[] = {"Nom", "Ag", "Taille"};
         JPanel listPlayersArea = new JPanel();
-        table = new JTable(data, titre);
-        table.setFont(policeGeneral);
-        table.setRowHeight(30);
+        tableAvailable = new JTable(data, titre);
+        tableAvailable.setFont(policeGeneral);
+        tableAvailable.setRowHeight(30);
         for(int i=0; i<data[0].length; i++){
-            table.getColumnModel().getColumn(i).setPreferredWidth(180);
+            tableAvailable.getColumnModel().getColumn(i).setPreferredWidth(180);
         }
 
-        listPlayersArea.add(table);
+        listPlayersArea.add(tableAvailable);
         return listPlayersArea;
     }
 }

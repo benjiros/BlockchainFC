@@ -9,6 +9,7 @@ public class HomePlayer extends JFrame implements ActionListener {
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private int width = screenSize.width;
     private int height = screenSize.height;
+    Font policeDisconnect = new Font(" Arial ",Font.BOLD,14);
     Font policeGeneral = new Font(" Arial ",Font.BOLD,18);
     Font policeButton = new Font(" Arial ",Font.BOLD,22);
     Font policeTitle = new Font(" Arial ",Font.BOLD,40);
@@ -27,8 +28,9 @@ public class HomePlayer extends JFrame implements ActionListener {
 
     JFrame propositionFrame;
     JFrame answerClubFrame;
-    JFrame answerAgentFrame;
+    JFrame proposeContractAgentFrame;
 
+    JButton disconnectButton;
     JButton propositionsAgentButton;
     JButton propositionsClubButton;
     JButton proposeContractButton;
@@ -39,6 +41,7 @@ public class HomePlayer extends JFrame implements ActionListener {
     JButton declinePropositionClubButton;
     JButton acceptPropositionAgentButton;
     JButton declinePropositionAgentButton;
+    JButton sendPropositionAgentButton;
 
     JTable table;
 
@@ -53,6 +56,13 @@ public class HomePlayer extends JFrame implements ActionListener {
         this.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // fin du programme lors de la fermeture de la fenêtre
         this.setResizable(false);
+
+        JPanel disconnectArea = new JPanel();
+        disconnectButton = new JButton("Se déconnecter");
+        disconnectButton.setFont(policeDisconnect);
+        disconnectButton.setBackground(Color.WHITE);
+        disconnectButton.addActionListener(this);
+        disconnectArea.add(disconnectButton);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel(username.toUpperCase() + " - " + "JOUEUR");
@@ -81,18 +91,18 @@ public class HomePlayer extends JFrame implements ActionListener {
         agentArea.add(agentLabel);
 
         JPanel propositionsClubArea = new JPanel();
-        propositionsClubButton = new JButton("Voir les offres de clubs");
+        propositionsClubButton = new JButton("Voir les offres qui vous sont faites");
         propositionsClubButton.setFont(policeButton);
         propositionsClubButton.setBackground(Color.WHITE);
         propositionsClubButton.addActionListener(this);
         propositionsClubArea.add(propositionsClubButton);
 
-        JPanel propositionsAgentArea = new JPanel();
-        propositionsAgentButton = new JButton("Voir les offres d'agents");
-        propositionsAgentButton.setFont(policeButton);
-        propositionsAgentButton.setBackground(Color.WHITE);
-        propositionsAgentButton.addActionListener(this);
-        propositionsAgentArea.add(propositionsAgentButton);
+        //JPanel propositionsAgentArea = new JPanel();
+        //propositionsAgentButton = new JButton("Voir les offres d'agents");
+        //propositionsAgentButton.setFont(policeButton);
+        //propositionsAgentButton.setBackground(Color.WHITE);
+        //propositionsAgentButton.addActionListener(this);
+        //propositionsAgentArea.add(propositionsAgentButton);
 
         JPanel proposeContractArea = new JPanel();
         proposeContractButton = new JButton("Proposer un contrat à un agent");
@@ -119,11 +129,12 @@ public class HomePlayer extends JFrame implements ActionListener {
 
         JPanel all = new JPanel();
         all.setLayout(new BoxLayout(all, BoxLayout.PAGE_AXIS));
+        all.add(disconnectArea);
         all.add(titleArea);
         all.add(clubArea);
         all.add(agentArea);
         all.add(propositionsClubArea);
-        all.add(propositionsAgentArea);
+        //all.add(propositionsAgentArea);
         all.add(proposeContractArea);
         all.add(fireAgentArea);
         all.add(resignArea);
@@ -133,17 +144,17 @@ public class HomePlayer extends JFrame implements ActionListener {
 
     public void propositionClub(){
         answerClubFrame = new JFrame();
-        answerClubFrame.setTitle("Propositions de clubs en attente");
+        answerClubFrame.setTitle("Propositions en attente");
         answerClubFrame.setSize(width/2, height/3);
         answerClubFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
         answerClubFrame.setResizable(false);
 
         JPanel titleArea = new JPanel();
-        JLabel title = new JLabel("Voici les propositions de clubs en attente");
+        JLabel title = new JLabel("Voici les propositions en attente");
         title.setFont(policeButton);
         titleArea.add(title);
 
-        //TODO RECUP LISTE PROPOSITIONS DE CLUBS
+        //TODO RECUP LISTE PROPOSITIONS
         String titre[] = {"Pseudo", "Age", "Taille"};
 
         JPanel listPropositionsArea = new JPanel();
@@ -177,19 +188,19 @@ public class HomePlayer extends JFrame implements ActionListener {
         answerClubFrame.setVisible(true);
     }
 
-    public void propositionAgent(){
-        answerAgentFrame = new JFrame();
-        answerAgentFrame.setTitle("Propositions d'agents en attente");
-        answerAgentFrame.setSize(width/2, height/3);
-        answerAgentFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        answerAgentFrame.setResizable(false);
+    public void proposeContract(){
+        proposeContractAgentFrame = new JFrame();
+        proposeContractAgentFrame.setTitle("Proposer une offre à un agent");
+        proposeContractAgentFrame.setSize(width/2, height/3);
+        proposeContractAgentFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
+        proposeContractAgentFrame.setResizable(false);
 
         JPanel titleArea = new JPanel();
-        JLabel title = new JLabel("Voici les propositions d'agents en attente");
+        JLabel title = new JLabel("Choisissez un agent à qui faire une offre");
         title.setFont(policeButton);
         titleArea.add(title);
 
-        //TODO RECUP LISTE PROPOSITIONS DE CLUBS
+        //TODO RECUP LISTE AGENTS
         String titre[] = {"Pseudo", "Age", "Taille"};
 
         JPanel listPropositionsArea = new JPanel();
@@ -201,39 +212,40 @@ public class HomePlayer extends JFrame implements ActionListener {
         }
         listPropositionsArea.add(table);
 
-        JPanel choiceArea = new JPanel();
-        choiceArea.setLayout(new BoxLayout(choiceArea, BoxLayout.LINE_AXIS));
-        acceptPropositionAgentButton = new JButton("Accepter l'offre");
-        acceptPropositionAgentButton.setFont(policeButton);
-        acceptPropositionAgentButton.setBackground(Color.WHITE);
-        acceptPropositionAgentButton.addActionListener(this);
-        choiceArea.add(acceptPropositionAgentButton);
-        declinePropositionAgentButton = new JButton("Refuser l'offre");
-        declinePropositionAgentButton.setFont(policeButton);
-        declinePropositionAgentButton.setBackground(Color.WHITE);
-        declinePropositionAgentButton.addActionListener(this);
-        choiceArea.add(declinePropositionAgentButton);
+        JPanel sendPropositionAgentArea = new JPanel();
+        sendPropositionAgentArea.setLayout(new BoxLayout(sendPropositionAgentArea, BoxLayout.LINE_AXIS));
+        sendPropositionAgentButton = new JButton("Envoyer l'offre");
+        sendPropositionAgentButton.setFont(policeButton);
+        sendPropositionAgentButton.setBackground(Color.WHITE);
+        sendPropositionAgentButton.addActionListener(this);
+        sendPropositionAgentArea.add(sendPropositionAgentButton);
 
         JPanel all = new JPanel();
         all.setLayout(new BoxLayout(all, BoxLayout.PAGE_AXIS));
         all.add(titleArea);
         all.add(listPropositionsArea);
-        all.add(choiceArea);
-        answerAgentFrame.getContentPane().add(all);
-        answerAgentFrame.setVisible(true);
+        all.add(sendPropositionAgentArea);
+        proposeContractAgentFrame.getContentPane().add(all);
+        proposeContractAgentFrame.setVisible(true);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == disconnectButton){
+            this.dispose();
+            new Login();
+        }
+
         if (e.getSource() == propositionsClubButton){
             propositionClub();
         }
 
-        if (e.getSource() == propositionsAgentButton){
-            propositionAgent();
-        }
+        //if (e.getSource() == propositionsAgentButton){
+        //    propositionAgent();
+        //}
 
         if (e.getSource() == proposeContractButton){
+            proposeContract();
         }
 
         if (e.getSource() == fireAgentButton){
@@ -270,7 +282,7 @@ public class HomePlayer extends JFrame implements ActionListener {
             }
         }
 
-        if (e.getSource() == acceptPropositionAgentButton){
+        /*if (e.getSource() == acceptPropositionAgentButton){
             //TODO Accepter offre agent
             if(table.getSelectedRow() >= 0) {
                 System.out.println(table.getSelectedRow());
@@ -287,8 +299,13 @@ public class HomePlayer extends JFrame implements ActionListener {
                 propositionAgent();
                 new Informations("L'offre de l'agent a été refusée");
             }
+        }*/
+
+        if (e.getSource() == sendPropositionAgentButton){
+            //TODO Envoyer proposition à l'agent
+            proposeContractAgentFrame.dispose();
+            new Informations("La proposition a été envoyée");
+
         }
     }
-
-
 }

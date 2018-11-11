@@ -10,6 +10,7 @@ public class HomeAgent extends JFrame implements ActionListener {
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private int width = screenSize.width;
     private int height = screenSize.height;
+    Font policeDisconnect = new Font(" Arial ",Font.BOLD,14);
     Font policeGeneral = new Font(" Arial ",Font.BOLD,18);
     Font policeButton = new Font(" Arial ",Font.BOLD,22);
     Font policeTitle = new Font(" Arial ",Font.BOLD,40);
@@ -25,6 +26,7 @@ public class HomeAgent extends JFrame implements ActionListener {
     JFrame propositionFrame;
     JFrame answerFrame;
 
+    JButton disconnectButton;
     JButton playersAgentButton;
     JButton contractsAgentButton;
     JButton playersAvailableAgentButton;
@@ -50,6 +52,13 @@ public class HomeAgent extends JFrame implements ActionListener {
         this.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // fin du programme lors de la fermeture de la fenêtre
         this.setResizable(false);
+
+        JPanel disconnectArea = new JPanel();
+        disconnectButton = new JButton("Se déconnecter");
+        disconnectButton.setFont(policeDisconnect);
+        disconnectButton.setBackground(Color.WHITE);
+        disconnectButton.addActionListener(this);
+        disconnectArea.add(disconnectButton);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel(username.toUpperCase() + " - " + "AGENT");
@@ -79,6 +88,7 @@ public class HomeAgent extends JFrame implements ActionListener {
 
         JPanel all = new JPanel();
         all.setLayout(new BoxLayout(all, BoxLayout.PAGE_AXIS));
+        all.add(disconnectArea);
         all.add(titleArea);
         all.add(playersAgentArea);
         all.add(playersAvailableAgentArea);
@@ -228,6 +238,10 @@ public class HomeAgent extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if(e.getSource() == disconnectButton){
+            this.dispose();
+            new Login();
+        }
         if (e.getSource() == playersAgentButton){
             playersLinkedToAgentFrame();
         }
