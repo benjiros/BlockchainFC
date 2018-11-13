@@ -26,10 +26,6 @@ contract Mercato is Mortal {
         bool club2Accepted;
     }
 
-    struct SwapContract{
-
-    }
-
     struct SignedService{
         address player;
         address agent;
@@ -122,12 +118,10 @@ contract Mercato is Mortal {
         return (proposal.clubOffer, proposal.duration, proposal.price);
     }
 
-    function refuseService() public returns (uint32){
+    function refuseService() public{
         ServiceProposal[] storage proposals = getServiceForPlayer[msg.sender];
         proposals[0] = proposals[proposals.length-1];
         proposals.length--;
-
-        return(0);
     }
 
     function proposeServiceToPlayer(address player, uint256 percentage) public {
@@ -215,7 +209,6 @@ contract Mercato is Mortal {
     }
 
     function acceptTransferProposalPlayer(address club) public returns(bool, bool) {
-        //Due to the limitation of the solidity framework you for now can only accept the first proposeTransferToPlayer
         TransferProposal[] storage playerTranfers = getTransfersProposalForPlayer[msg.sender];
         for(uint32 i = 0 ; i < playerTranfers.length ; i++){
             if(playerTranfers[i].clubOffer == club){
@@ -292,7 +285,7 @@ contract Mercato is Mortal {
         return finalContract;
     }
 
-    function signSwapContract(SwapProposal swapProposal) private returns (SignedContract){
+    function signSwapContract(SwapProposal swapProposal) private{
         SignedContract memory contract1 = SignedContract(swapProposal.club1, swapProposal.player2, swapProposal.duration1, 0);
         getCurrentContractForPlayer[swapProposal.player2] = contract1;
         getCurrentContractForClub[swapProposal.club1].push(contract1);
@@ -300,12 +293,9 @@ contract Mercato is Mortal {
         SignedContract memory contract2 = SignedContract(swapProposal.club2, swapProposal.player1, swapProposal.duration2, 0);
         getCurrentContractForPlayer[swapProposal.player1] = contract2;
         getCurrentContractForClub[swapProposal.club2].push(contract2);
-
-        return(contract1);
-
     }
 
-    function finalizeTransfer(address player) public payable returns (string){
+    function finalizeTransfer(address player) public payable{
 
         TransferProposal[] storage playerTranfers = getTransfersProposalForPlayer[player];
         for(uint32 i = 0 ; i < playerTranfers.length ; i++){
@@ -317,12 +307,9 @@ contract Mercato is Mortal {
             if(acceptedProposal.clubAccepted && acceptedProposal.playerAccepted){
                 require(msg.value >= acceptedProposal.price);
                 signContract(acceptedProposal);
-                acceptedProposal.clubOwner.transfer(acceptedProposal.price);
+                transferEther(acceptedProposal.clubOwner, player, acceptedProposal.price);
                 cleanUpPaperwork(acceptedProposal.player, acceptedProposal.clubOwner);
-
-                return ("OK");
             } else {
-                return ("Not accepted by both party");
             }
         }
         else {
@@ -330,11 +317,20 @@ contract Mercato is Mortal {
                 require(msg.value >= acceptedProposal.price);
                 signContract(acceptedProposal);
                 cleanUpPaperwork(acceptedProposal.player, 0);
-                return ("Ok player unemployed");
             }
         }
+    }
 
-        return ("OK");
+    function transferEther(address clubOwner, address player, uint256 price) private{
+        SignedService storage service = getAgentForPlayer[player];
+        if(service.agent != 0){
+            uint256 moneyForAgent = price*service.percentage/100;
+            uint256 moneyForClub = price-moneyForAgent;
+            clubOwner.transfer(moneyForClub);
+            service.agent.transfer(moneyForAgent);
+        } else {
+            clubOwner.transfer(price);
+        }
     }
 
     function getClubPlayerAt(uint i) public view returns(address, uint256, uint256){
@@ -368,18 +364,16 @@ contract Mercato is Mortal {
         }
     }
 
-    function acceptSwapProposal(address myPlayer, address player1) public returns (address, address){
+    function acceptSwapProposal(address myPlayer, address player1) public{
         SwapProposal[] storage proposals = getSwapProposalForClub[msg.sender];
         for(uint32 j = 0 ; j < proposals.length ; j++){
             if(proposals[j].player2 == myPlayer && proposals[j].player1 == player1){
                 SwapProposal storage  proposal = proposals[j];
             }
         }
-        SignedContract memory contracts;
-        contracts = signSwapContract(proposal);
+        signSwapContract(proposal);
         cleanUpPaperwork(proposal.player1, proposal.club1);
         cleanUpPaperwork(proposal.player2, proposal.club2);
-        return (contracts.player, contracts.clubOwner);
     }
 
     function getPlayerCurrentContract() public view returns (address, uint256, uint256){
@@ -393,7 +387,6 @@ contract Mercato is Mortal {
 
     function getCurrentSwapProposalForClubAt(uint i) public view returns (address, address, address, uint256, uint256){
         SwapProposal p = getSwapProposalForClub[msg.sender][i];
-
         return(p.player1, p.player2, p.club2, p.duration1, p.duration2);
     }
 }
