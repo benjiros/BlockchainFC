@@ -372,6 +372,11 @@ contract Mercato is Mortal {
         SwapProposal p = getSwapProposalForClub[msg.sender][i];
         return(p.player1, p.player2, p.club2, p.duration1, p.duration2);
     }
+    
+    function getTransfertProposalReadyAt(uint i) public view returns (address, uint256, uint256, uint256){
+        TransferProposal storage t = getTranferReadyForClub[msg.sender][i];
+        return(t.player, t.duration, t.price,  getTranferReadyForClub[msg.sender].length);
+    }
 }
     
     
