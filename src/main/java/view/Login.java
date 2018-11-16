@@ -1,15 +1,22 @@
 package view;
 
+import back.Variables;
+import model.Club;
+import model.Player;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.HashMap;
 import javax.swing.*;
 
 public class Login extends JFrame implements ActionListener {
-    //TODO CREER ACCOUNT
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     private int width = screenSize.width;
     private int height = screenSize.height;
+
+    String mercato_address = "";
+
     Font policeGeneral = new Font(" Arial ",Font.BOLD,18);
     Font policeButton = new Font(" Arial ",Font.BOLD,24);
     Font policeTitle = new Font(" Arial ",Font.BOLD,40);
@@ -30,15 +37,22 @@ public class Login extends JFrame implements ActionListener {
     JButton loginButton;
     JButton confirmButton;
 
-    public static void main(String[] args){
+    HashMap<String, Club> listClubs;
+    HashMap<String, Player> listPlayers;
+
+    public static void main(String[] args) {
+
+        Variables.initiate();
         new Login();
     }
+
     public Login(){
         this.setTitle("Bienvenue sur Blockchain FC");
         this.setSize(width/2, height/3);
         this.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // fin du programme lors de la fermeture de la fenêtre
-        this.setResizable(false);
+        this.setResizable(true);
+
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel("Bienvenue sur Blockchain FC");
@@ -94,7 +108,7 @@ public class Login extends JFrame implements ActionListener {
         all.add(profilArea);
         all.add(loginArea);
         all.add(createAccountArea);
-        this.getContentPane().add(all);
+        this.getContentPane().add(new JScrollPane(all));
         this.setVisible(true);
     }
 
@@ -103,7 +117,7 @@ public class Login extends JFrame implements ActionListener {
         createAccountFrame.setTitle("Créer un compte");
         createAccountFrame.setSize(width/2, height/3);
         createAccountFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        createAccountFrame.setResizable(false);
+        createAccountFrame.setResizable(true);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel("Créer un compte");
@@ -150,7 +164,7 @@ public class Login extends JFrame implements ActionListener {
         all.add(passwordArea);
         all.add(profilArea);
         all.add(createArea);
-        createAccountFrame.getContentPane().add(all);
+        createAccountFrame.getContentPane().add(new JScrollPane(all));
         createAccountFrame.setVisible(true);
     }
 
@@ -158,11 +172,12 @@ public class Login extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource()==loginButton && !textField.getText().isEmpty() && (playerRadio.isSelected() || agentRadio.isSelected() || clubRadio.isSelected())) {
             String username = textField.getText();
+            System.out.println(username);
             String password = String.valueOf(passwordField.getPassword());
             this.dispose();
-            if(playerRadio.isSelected()) new HomePlayer(username);
-            if(agentRadio.isSelected()) new HomeAgent(username);
-            if(clubRadio.isSelected()) new HomeClub(username);
+            if(playerRadio.isSelected()) new HomePlayer(username, password);
+            if(agentRadio.isSelected()) new HomeAgent(username, password);
+            if(clubRadio.isSelected()) new HomeClub(username, password);
         }
 
         if (e.getSource()==createAccountButton) {

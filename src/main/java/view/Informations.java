@@ -14,7 +14,7 @@ public class Informations extends JFrame {
         JFrame frame = new JFrame();
         frame.setSize(width/3, height/5);
         frame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        frame.setResizable(false);
+        frame.setResizable(true);
         frame.setTitle("Confirmation");
 
         JPanel titleArea = new JPanel();
@@ -27,7 +27,7 @@ public class Informations extends JFrame {
         all.setLayout(new BoxLayout(all, BoxLayout.PAGE_AXIS));
         all.add(titleArea);
 
-        frame.getContentPane().add(all);
+        frame.getContentPane().add(new JScrollPane(all));
         frame.setVisible(true);
     }
 }

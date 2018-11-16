@@ -1,9 +1,20 @@
 package view;
 
+import back.Variables;
+import model.Club;
+import model.Player;
+import org.web3j.crypto.CipherException;
+import org.web3j.protocol.exceptions.TransactionException;
+import org.web3j.tuples.generated.Tuple3;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class HomePlayer extends JFrame implements ActionListener {
     private Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -13,11 +24,18 @@ public class HomePlayer extends JFrame implements ActionListener {
     Font policeGeneral = new Font(" Arial ",Font.BOLD,18);
     Font policeButton = new Font(" Arial ",Font.BOLD,22);
     Font policeTitle = new Font(" Arial ",Font.BOLD,40);
-    String username;
+
+    String address;
+    String password;
+    Player player;
+
+    Object [][] listOfferPlayer;
+
     //TODO RECUP AGENT DU JOUEUR
     String agent = "Agent Bernes";
     //TODO RECUP CLUB DU JOUEUR
     String club = "AS Monaco";
+
 
     Object[][] data = {
             {"Cysboy", "28 ans", "1.80 m"},
@@ -46,16 +64,20 @@ public class HomePlayer extends JFrame implements ActionListener {
     JTable table;
 
     public static void main(String[] args){
-        new HomePlayer("Steven Gerrard");
+        //new HomePlayer("Steven Gerrard", "");
     }
 
-    public HomePlayer(String username) {
-        this.username = username;
-        this.setTitle("Votre espace perso - " + username);
+    public HomePlayer(String address, String password) {
+        this.address = address;
+        this.password = password;
+
+        this.player = Variables.listPlayers.get(this.address);
+
+        this.setTitle("Votre espace perso - " + player.name);
         this.setSize(width/2, height/2);
         this.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // fin du programme lors de la fermeture de la fenêtre
-        this.setResizable(false);
+        this.setResizable(true);
 
         JPanel disconnectArea = new JPanel();
         disconnectButton = new JButton("Se déconnecter");
@@ -65,21 +87,21 @@ public class HomePlayer extends JFrame implements ActionListener {
         disconnectArea.add(disconnectButton);
 
         JPanel titleArea = new JPanel();
-        JLabel title = new JLabel(username.toUpperCase() + " - " + "JOUEUR");
+        JLabel title = new JLabel(player.name.toUpperCase() + " - " + "JOUEUR");
         title.setFont(policeTitle);
         titleArea.add(title);
 
-
+        //TODO GET CLUB & AGENT
         JPanel clubArea = new JPanel();
         JLabel clubLabel;
-        if(!club.isEmpty()){
-            clubLabel = new JLabel("Votre club actuel est " + club.toUpperCase());
+        if(player.getNameClub() != ""){
+            clubLabel = new JLabel("Votre club actuel est " + player.getNameClub());
         } else {
             clubLabel = new JLabel("Vous n'avez pas de club");
         }
         clubLabel.setFont(policeGeneral);
         clubArea.add(clubLabel);
-
+        /*
         JPanel agentArea = new JPanel();
         JLabel agentLabel;
         if(!agent.isEmpty()){
@@ -89,6 +111,7 @@ public class HomePlayer extends JFrame implements ActionListener {
         }
         agentLabel.setFont(policeGeneral);
         agentArea.add(agentLabel);
+        */
 
         JPanel propositionsClubArea = new JPanel();
         propositionsClubButton = new JButton("Voir les offres qui vous sont faites");
@@ -132,22 +155,22 @@ public class HomePlayer extends JFrame implements ActionListener {
         all.add(disconnectArea);
         all.add(titleArea);
         all.add(clubArea);
-        all.add(agentArea);
+        //all.add(agentArea);
         all.add(propositionsClubArea);
         //all.add(propositionsAgentArea);
-        all.add(proposeContractArea);
+        //all.add(proposeContractArea);
         all.add(fireAgentArea);
         all.add(resignArea);
-        this.getContentPane().add(all);
+        this.getContentPane().add(new JScrollPane(all));
         this.setVisible(true);
     }
 
-    public void propositionClub(){
+    public void propositionClub() throws InterruptedException, ExecutionException, TransactionException, CipherException, IOException {
         answerClubFrame = new JFrame();
         answerClubFrame.setTitle("Propositions en attente");
         answerClubFrame.setSize(width/2, height/3);
         answerClubFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        answerClubFrame.setResizable(false);
+        answerClubFrame.setResizable(true);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel("Voici les propositions en attente");
@@ -155,16 +178,19 @@ public class HomePlayer extends JFrame implements ActionListener {
         titleArea.add(title);
 
         //TODO RECUP LISTE PROPOSITIONS
-        String titre[] = {"Pseudo", "Age", "Taille"};
+        String titre[] = {"Club", "Durée de contrat", "Montant du transfert"};
+        listOfferPlayer = player.getListOfferPlayer();
 
         JPanel listPropositionsArea = new JPanel();
-        table = new JTable(data, titre);
+        table = new JTable(listOfferPlayer, titre);
         table.setFont(policeGeneral);
         table.setRowHeight(30);
-        for(int i=0; i<data[0].length; i++){
-            table.getColumnModel().getColumn(i).setPreferredWidth(180);
+        if(listOfferPlayer.length > 0){
+            for(int i=0; i<listOfferPlayer[0].length; i++){
+                table.getColumnModel().getColumn(i).setPreferredWidth(180);
+            }
+            listPropositionsArea.add(new JScrollPane(table));
         }
-        listPropositionsArea.add(table);
 
         JPanel choiceArea = new JPanel();
         choiceArea.setLayout(new BoxLayout(choiceArea, BoxLayout.LINE_AXIS));
@@ -184,7 +210,7 @@ public class HomePlayer extends JFrame implements ActionListener {
         all.add(titleArea);
         all.add(listPropositionsArea);
         all.add(choiceArea);
-        answerClubFrame.getContentPane().add(all);
+        answerClubFrame.getContentPane().add(new JScrollPane(all));
         answerClubFrame.setVisible(true);
     }
 
@@ -193,7 +219,7 @@ public class HomePlayer extends JFrame implements ActionListener {
         proposeContractAgentFrame.setTitle("Proposer une offre à un agent");
         proposeContractAgentFrame.setSize(width/2, height/3);
         proposeContractAgentFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        proposeContractAgentFrame.setResizable(false);
+        proposeContractAgentFrame.setResizable(true);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel("Choisissez un agent à qui faire une offre");
@@ -210,7 +236,7 @@ public class HomePlayer extends JFrame implements ActionListener {
         for(int i=0; i<data[0].length; i++){
             table.getColumnModel().getColumn(i).setPreferredWidth(180);
         }
-        listPropositionsArea.add(table);
+        listPropositionsArea.add(new JScrollPane(table));
 
         JPanel sendPropositionAgentArea = new JPanel();
         sendPropositionAgentArea.setLayout(new BoxLayout(sendPropositionAgentArea, BoxLayout.LINE_AXIS));
@@ -225,7 +251,7 @@ public class HomePlayer extends JFrame implements ActionListener {
         all.add(titleArea);
         all.add(listPropositionsArea);
         all.add(sendPropositionAgentArea);
-        proposeContractAgentFrame.getContentPane().add(all);
+        proposeContractAgentFrame.getContentPane().add(new JScrollPane(all));
         proposeContractAgentFrame.setVisible(true);
     }
 
@@ -234,10 +260,17 @@ public class HomePlayer extends JFrame implements ActionListener {
         if(e.getSource() == disconnectButton){
             this.dispose();
             new Login();
+
         }
 
         if (e.getSource() == propositionsClubButton){
-            propositionClub();
+
+            try {
+                propositionClub();
+            } catch (InterruptedException | ExecutionException | CipherException | TransactionException | IOException e1) {
+                e1.printStackTrace();
+            }
+
         }
 
         //if (e.getSource() == propositionsAgentButton){
@@ -251,14 +284,14 @@ public class HomePlayer extends JFrame implements ActionListener {
         if (e.getSource() == fireAgentButton){
             //TODO VIRER AGENT
             this.dispose();
-            new HomePlayer(username);
+            new HomePlayer(address, password);
             new Informations("Vous avez viré votre agent");
         }
 
         if (e.getSource() == resignButton){
             //TODO QUITTER CLUB
             this.dispose();
-            new HomePlayer(username);
+            new HomePlayer(address, password);
             new Informations("Vous avez quitté votre club");
         }
 
@@ -266,19 +299,38 @@ public class HomePlayer extends JFrame implements ActionListener {
         if (e.getSource() == acceptPropositionClubButton){
             //TODO Accepter offre club
             if(table.getSelectedRow() >= 0) {
-                System.out.println(table.getSelectedRow());
+                Club clubOffering = Variables.listClubs.get(listOfferPlayer[table.getSelectedRow()][0]);
+                try {
+                    player.acceptOfferClub(clubOffering);
+                } catch (IOException | CipherException | InterruptedException | TransactionException | ExecutionException e1) {
+                    e1.printStackTrace();
+                }
+
                 answerClubFrame.dispose();
-                propositionClub();
-                new Informations("L'offre du club a été acceptée");
+                try {
+                    propositionClub();
+                } catch (InterruptedException | ExecutionException | CipherException | TransactionException | IOException e1) {
+                    e1.printStackTrace();
+                }
+                new Informations("L'offre de " + clubOffering.name + " a été acceptée");
             }
         }
         if (e.getSource() == declinePropositionClubButton){
             //TODO Refuser offre club
             if(table.getSelectedRow() >= 0) {
-                System.out.println(table.getSelectedRow());
+                Club clubOffering = Variables.listClubs.get(listOfferPlayer[table.getSelectedRow()][0]);
+                try {
+                    player.refuseOfferClub(clubOffering);
+                } catch (IOException | CipherException | InterruptedException | TransactionException | ExecutionException e1) {
+                    e1.printStackTrace();
+                }
                 answerClubFrame.dispose();
-                propositionClub();
-                new Informations("L'offre du club a été refusée");
+                try {
+                    propositionClub();
+                } catch (InterruptedException | ExecutionException | CipherException | TransactionException | IOException e1) {
+                    e1.printStackTrace();
+                }
+                new Informations("L'offre de " + clubOffering.name + " a été refusée");
             }
         }
 

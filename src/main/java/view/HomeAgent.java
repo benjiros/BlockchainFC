@@ -15,6 +15,7 @@ public class HomeAgent extends JFrame implements ActionListener {
     Font policeButton = new Font(" Arial ",Font.BOLD,22);
     Font policeTitle = new Font(" Arial ",Font.BOLD,40);
     String username;
+    String password;
 
     Object[][] data = {
             {"Cysboy", "28 ans", "1.80 m"},
@@ -42,16 +43,17 @@ public class HomeAgent extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args){
-        new HomeAgent("Bernes");
+        new HomeAgent("Bernes","");
     }
 
-    public HomeAgent(String username){
+    public HomeAgent(String username, String password){
         this.username = username;
+        this.password = password;
         this.setTitle("Votre espace perso - " + username);
         this.setSize(width/2, height/3);
         this.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // fin du programme lors de la fermeture de la fenêtre
-        this.setResizable(false);
+        this.setResizable(true);
 
         JPanel disconnectArea = new JPanel();
         disconnectButton = new JButton("Se déconnecter");
@@ -92,8 +94,8 @@ public class HomeAgent extends JFrame implements ActionListener {
         all.add(titleArea);
         all.add(playersAgentArea);
         all.add(playersAvailableAgentArea);
-        all.add(contractsAgentArea);
-        this.getContentPane().add(all);
+        //all.add(contractsAgentArea);
+        this.getContentPane().add(new JScrollPane(all));
         this.setVisible(true);
 
     }
@@ -103,7 +105,7 @@ public class HomeAgent extends JFrame implements ActionListener {
         frame.setTitle("Votre liste de joueurs");
         frame.setSize(width/2, height/3);
         frame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        frame.setResizable(false);
+        frame.setResizable(true);
         //TODO RECUP LISTE JOUEURS
         String titre[] = {"Nom", "Age", "Taille"};
 
@@ -120,12 +122,12 @@ public class HomeAgent extends JFrame implements ActionListener {
             table.getColumnModel().getColumn(i).setPreferredWidth(180);
         }
         table.setEnabled(false);
-        listPlayersArea.add(table);
+        listPlayersArea.add(new JScrollPane(table));
         JPanel all = new JPanel();
         all.setLayout(new BoxLayout(all, BoxLayout.PAGE_AXIS));
         all.add(titleArea);
         all.add(listPlayersArea);
-        frame.getContentPane().add(all);
+        frame.getContentPane().add(new JScrollPane(all));
         frame.setVisible(true);
     }
 
@@ -134,7 +136,7 @@ public class HomeAgent extends JFrame implements ActionListener {
         propositionFrame.setTitle("Joueurs disponibles");
         propositionFrame.setSize(width/2, height/3);
         propositionFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        propositionFrame.setResizable(false);
+        propositionFrame.setResizable(true);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel("Voici la liste des joueurs disponibles");
@@ -152,7 +154,7 @@ public class HomeAgent extends JFrame implements ActionListener {
             table.getColumnModel().getColumn(i).setPreferredWidth(180);
         }
         //table.setEnabled(false);
-        listPlayersAvailableArea.add(table);
+        listPlayersAvailableArea.add(new JScrollPane(table));
 
         JPanel numberYearsArea = new JPanel();
         // usernameArea.setLayout(new BoxLayout(usernameArea,BoxLayout.LINE_AXIS));
@@ -183,7 +185,7 @@ public class HomeAgent extends JFrame implements ActionListener {
         all.add(numberYearsArea);
         all.add(percentageArea);
         all.add(confirmButton);
-        propositionFrame.getContentPane().add(all);
+        propositionFrame.getContentPane().add(new JScrollPane(all));
         propositionFrame.setVisible(true);
 
     }
@@ -193,7 +195,7 @@ public class HomeAgent extends JFrame implements ActionListener {
         answerFrame.setTitle("Propositions de contrat en attente");
         answerFrame.setSize(width/2, height/3);
         answerFrame.setLocationRelativeTo(null); // centrer la fenêtre sur l'écran
-        answerFrame.setResizable(false);
+        answerFrame.setResizable(true);
 
         JPanel titleArea = new JPanel();
         JLabel title = new JLabel("Voici les propositions de contrat en attente");
@@ -210,7 +212,7 @@ public class HomeAgent extends JFrame implements ActionListener {
         for(int i=0; i<data[0].length; i++){
             table.getColumnModel().getColumn(i).setPreferredWidth(180);
         }
-        listPropositionsArea.add(table);
+        listPropositionsArea.add(new JScrollPane(table));
 
         JPanel choiceArea = new JPanel();
         choiceArea.setLayout(new BoxLayout(choiceArea, BoxLayout.LINE_AXIS));
@@ -230,7 +232,7 @@ public class HomeAgent extends JFrame implements ActionListener {
         all.add(titleArea);
         all.add(listPropositionsArea);
         all.add(choiceArea);
-        answerFrame.getContentPane().add(all);
+        answerFrame.getContentPane().add(new JScrollPane(all));
         answerFrame.setVisible(true);
 
     }
