@@ -41,9 +41,7 @@ public class AskingMercato {
     Web3j web3 = Web3j.build(new HttpService());  // defaults to http://localhost:8545/
 
 
-    public void initiate()  throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
-        // Connect to local node
-        //Web3j web3 = Web3j.build(new HttpService());  // defaults to http://localhost:8545/
+    public String initiate()  throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
 
         // Load credentials for accessing wallet of source account
         Credentials credentials = WalletUtils.loadCredentials(SOURCE_ACCOUNT_PASSWORD, LOCATION_SOURCE_ACCOUNT);
@@ -64,6 +62,7 @@ public class AskingMercato {
         } catch (Exception e){
             System.err.println(e);
         }
+        return MERCATO_ADDRESS;
     }
 
     public void transferProposal(String clubAccount, String clubPassword, String player, BigInteger duration, BigInteger price) throws IOException, CipherException, TransactionException, InterruptedException, ExecutionException {
@@ -213,7 +212,7 @@ public class AskingMercato {
 
         Credentials credentials = WalletUtils.loadCredentials(playerPassword, playerAccount);
 
-        Mercato mercato = Mercato.load(MERCATO_ADDRESS,web3, credentials, BigInteger.valueOf(0), DefaultGasProvider.GAS_LIMIT);
+        Mercato mercato = Mercato.load(MERCATO_ADDRESS, web3, credentials, BigInteger.valueOf(0), DefaultGasProvider.GAS_LIMIT);
 
         List<Tuple3> listOfferPlayer = new ArrayList<Tuple3>();
         try{
